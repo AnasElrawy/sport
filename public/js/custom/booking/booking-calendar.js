@@ -949,7 +949,8 @@
                         });
 
                         var employeeData = {
-                            title: '<img src="' + JsManager.BaseUrl() + "/" + item.image_url + ' " class="resource-image"> <span class="resource-name">' + item.employee.substr(0, 27) + '<span>' + (item.designation == null ? "Unknown Destination" : item.designation.substr(0, 35)) + '<br>' + item.branch.substr(0, 35) + '</span></span>',
+                            title: '<img src="' + JsManager.BaseUrl() + "/" + item.image_url + ' " class="resource-image"> <span class="resource-name" style="color:#1269DB;">' + item.employee.substr(0, 40) + '<span>' + (item.designation == null ? "Unknown Destination" : item.designation.substr(0, 35)) + '<br>' + item.branch.substr(0, 35) + '</span></span>',
+                            // title: '<img src="' + JsManager.BaseUrl() + "/" + item.image_url + ' " class="resource-image"> <span class="resource-name">' + item.employee.substr(0, 27) + '<span>' + (item.designation == null ? "Unknown Destination" : item.designation.substr(0, 35)) + '<br>' + item.branch.substr(0, 35) + '</span></span>',
                             impossibleDate: [],
                             businessHours: ResourceTimeline.BusinessHours(),
                             schedule: scheduleData,
@@ -970,7 +971,8 @@
                         timeLineY: 70,
                         verticalScrollbar: 10,
                         timeLineBorder: 2,
-                        dataWidth: 250,
+                        // dataWidth: 250,
+                        dataWidth: 350,
                         nextNo: 2,
                         debug: "",
                         multiple: multiple,

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 
 // Route::post('create-cards', [App\Http\Controllers\cardController::class, 'createCrard'])->name('create-cards');
 Route::post('charge-card', [App\Http\Controllers\cardController::class, 'chargeCrard'])->name('charge-card');
+Route::get('/cards/pdf/{group_id}', [App\Http\Controllers\cardController::class, 'exportPdf'])->name('cards.pdf');
 
 
 
@@ -278,13 +279,12 @@ Route::group(['middleware' => 'xssProtection'], function () {
             Route::post('update-user-info', [App\Http\Controllers\UserManagement\UserController::class, 'updateUserInfo'])->name('edit.user.info');
             Route::post('delete-user-info', [App\Http\Controllers\UserManagement\UserController::class, 'deleteUserInfo'])->name('delete.user.info');
             
-            ////////card
+            //Cards System
             Route::get('card', [App\Http\Controllers\cardController::class, 'card'])->name('card');
-            // Route::get('cardindex', [App\Http\Controllers\CardSystemController::class, 'indexx'])->name('cardindex');
+            Route::post('create-cards', [App\Http\Controllers\cardController::class, 'createCard'])->name('create-cards');
             // Route::post('create-cards', [App\Http\Controllers\cardController::class, 'createCrard'])->name('create-cards');
-            // Route::post('create-cards', [App\Http\Controllers\cardController::class, 'createCrard'])->name('create-cards');
-            Route::post('create-cards', [App\Http\Controllers\cardController::class, 'createCrard'])->name('create-cards');
-            
+            Route::get('get-cards', [App\Http\Controllers\cardController::class, 'getcards'])->name('getcards');
+            // Route::get
 
             //role info
             Route::get('role-info', [App\Http\Controllers\UserManagement\RoleController::class, 'role'])->name('role');
@@ -326,7 +326,7 @@ Route::group(['middleware' => 'xssProtection'], function () {
             Route::post('category-delete', [App\Http\Controllers\Services\CategoriesController::class, 'deletecategory'])->name('category.delete');
 
             // business
-            Route::get('business', [App\Http\Controllers\Settings\BusinessController::class, 'business'])->name('business.hour');
+            // Route::get('business', [App\Http\Controllers\Settings\BusinessController::class, 'business'])->name('business.hour');
 
             //Employee
             Route::get('employee', [App\Http\Controllers\Employee\EmployeeController::class, 'employee'])->name('employee');

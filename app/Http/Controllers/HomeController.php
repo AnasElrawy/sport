@@ -19,7 +19,7 @@ class HomeController extends Controller
 
 
     public function errorDisplay(Request $req)
-    {
+    {   
         return view('error_display', $req);
     }
 

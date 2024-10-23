@@ -3,14 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use App\Models\CardSystem;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-
-
-
-
+use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
+use App\Models\CardSystem\CardGroup;
+use App\Models\CardSystem\Card;
 
 class cardController extends Controller
 {
@@ -23,165 +20,184 @@ class cardController extends Controller
 
         return response()->json([
             'message' => 'it is in card.'
-          ], 200);
+        ], 200);
     }
 
-
-    public function createCrard(Request $request)
+    public function createCard(Request $request)
     {
 
-        
-        // dd($request);
-
-    //     "codeLength" => "اختر عدد الخانات"
-    //   "formula" => "اختر صيغة الكود"
-    //   "card_number" => null
-    //   "price" => null
-
-
+        // Validate the request data
         $validatedData = $request->validate([
             'codeLength' => [
-                'required',  // Code is required
-                'numeric',    // Must be a string
-                'min:8',     // Minimum length 6 characters
-                'max:20',    // Maximum length 10 characters
-                // 'unique:cards,unique_code'  // Ensure it's unique in 'cards' table
+                'required',
+                'numeric',
+                'min:8',
+                'max:20',
             ],
             'price' => [
-                'required',  // Price is required
-                'numeric',   // Must be a number
-                'min:0'      // Price can't be negative
+                'required',
+                'numeric',
+                'min:1'
             ],
-            'formula' =>  'required|in:letters_numbers,numbers,letters',
-            'card_number' => 
-            [
-                'required',  
-                'numeric',   
-                'min:0'      
+            'formula' => 'required|in:letters_numbers,numbers,letters',
+            'card_count' => [
+                'required',
+                'numeric',
+                'min:1'
             ],
-               
         ], [
             // Custom error messages
             'codeLength.required' => 'The code length field is mandatory.',
             'codeLength.numeric'  => 'The code length must be a numeric value.',
             'codeLength.min'      => 'The code length must be at least 8 characters.',
             'codeLength.max'      => 'The code length cannot be greater than 20 characters.',
-            
+
             'price.required'      => 'The price field is required.',
             'price.numeric'       => 'The price must be a valid number.',
-            'price.min'           => 'The price must be at least 0.',
-            
+            'price.min'           => 'The price must be at least 1.',
+
             'formula.required'    => 'Please select a valid formula option.',
             'formula.in'          => 'The selected formula is invalid. Choose from letters_numbers, numbers, or letters.',
-            
-            'card_number.required'=> 'The card number field is required.',
-            'card_number.numeric' => 'The card number must be a numeric value.',
-            'card_number.min'     => 'The card number must be greater than or equal to 0.',
+
+            'card_count.required' => 'The card number field is required.',
+            'card_count.numeric'  => 'The card number must be a numeric value.',
+            'card_count.min'      => 'The card number must be at least 1.',
         ]);
 
-
-
-
-        $characters='';
-
-        if ($request->formula=="letters_numbers")
-        {
+        // Define character set based on the formula
+        $characters = '';
+        if ($request->formula == 'letters_numbers') {
             $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-        }
-        else if($request->formula=="letters")
-        {
+        } elseif ($request->formula == 'letters') {
             $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-            
-        }
-        else if ($request->formula=="numbers")
-        {
+        } elseif ($request->formula == 'numbers') {
             $characters = '0123456789';
-            
         }
-        
-        
+
+        // Create a new CardGroup record
+        $cardGroup = CardGroup::create([
+            'price' => $request->price,
+            'formula' => $request->formula,
+            'count' => $request->card_count
+        ]);
+
         $charactersNumber = strlen($characters);
         $codeLength = $request->codeLength;
 
-        $lastFileId = CardSystem::orderBy('file_id', 'desc')->value('file_id'); // Get the last file_id
-        $newFileId = $lastFileId ? $lastFileId + 1 : 1;  // Increment by 1 or set to 1 if no file_id exists
-
-
-        // dd($newFileId);
-
-
-        for ($i = 0; $i < $request->card_number; $i++) {
-
+        // Generate and save each card
+        for ($i = 0; $i < $request->card_count; $i++) {
             $code = '';
-    
-            while (strlen($code) < $codeLength) {
-                $position = rand(0, $charactersNumber - 1);
-                $character = $characters[$position];
-                $code = $code.$character;
-            }
-            
 
-            CardSystem::create([
-                'file_id' => $newFileId,
-                'price' => $request->price,
+            // Generate a unique code of the required length
+            while ($codeLength > strlen($code)) {
+                $position = rand(0, $charactersNumber - 1);
+                $code .= $characters[$position];
+            }
+
+            // Create each card and link it to the CardGroup
+            Card::create([
+                'group_id' => $cardGroup->id,
                 'code' => $code,
+                'is_charged' => false,
             ]);
         }
 
+        // Flash success message to the session
+        session()->flash('success', 'Cards created successfully!');
 
-            // Flash success message to the session
-    session()->flash('success', 'Card created successfully!');
-
-    // Redirect back or to another route
-    return redirect()->back();
-
-
-
-
+        // Redirect back or to another route
+        return redirect()->back();
     }
 
-
-    public function chargeCrard(Request $request)
+    public function chargeCard(Request $request)
     {
-
+        // Get the authenticated user
         $user = Auth::user();
-        // dd($user->id);
 
+        // Find the card by its code and ensure it hasn't been charged
+        $card = Card::where('code', $request->code)->where('is_charged', false)->first();
 
-
-        $card=CardSystem::where('code', $request->code)->where('is_charged',false)->first();
-        if($card)
-        {
+        if ($card) {
+            // Get the price from the card and user ID
+            $amount = $card->group->price; // Get the price from the related CardGroup
             $userId = $user->id;
-            $amount = $card->price;
-    
-                    
             $user = User::where('id', $userId)->first();
-            $rtr = $user->userBalance()->create([
-                // 'balanceable_type' => PaymentType::UserBalance,
+            // Update user's balance by creating a balance record (assuming userBalance() is a relationship)
+            $user->userBalance()->create([
                 'amount' => $amount,
                 'user_id' => $userId,
-                'balance_type' => 1,
-                'status' => 1
+                'balance_type' => 1,  // Assuming 1 means a deposit/charge type
+                'status' => 1         // Assuming 1 means success/completed
             ]);
 
-
+            // Mark the card as charged
             $card->is_charged = true;
             $card->save();
 
+            // Redirect back with success message
             return redirect()->back()->with('success', 'تم شحن البطاقة بنجاح.');
-
-        }else{
-            // return response()->json([
-            //     'message' => 'Card not found or has already been charged.'
-            // ], 404);
+        } else {
+            // If the card doesn't exist or is already charged
             return redirect()->back()->with('error', 'لم يتم العثور على البطاقة أو تم شحنها بالفعل.');
-
-
         }
-        
     }
 
-    
 
+    public function getcards(Request $request)
+    {
+        // Start with a base query
+        $query = CardGroup::query();
+
+        // Apply filters if they exist
+        if ($request->filled('group_id')) {
+            $query->where('id', $request->group_id);
+        }
+
+        if ($request->filled('count_from') && $request->filled('count_to')) {
+            $query->whereBetween('count', [$request->count_from, $request->count_to]);
+        } elseif ($request->filled('count_from')) {
+            $query->where('count', '>=', $request->count_from);
+        } elseif ($request->filled('count_to')) {
+            $query->where('count', '<=', $request->count_to);
+        }
+
+        if ($request->filled('formula')) {
+            $query->where('formula', $request->formula);
+        }
+
+        // Price range filter
+        if ($request->filled('price_from') && $request->filled('price_to')) {
+            $query->whereBetween('price', [$request->price_from, $request->price_to]);
+        } elseif ($request->filled('price_from')) {
+            $query->where('price', '>=', $request->price_from);
+        } elseif ($request->filled('price_to')) {
+            $query->where('price', '<=', $request->price_to);
+        }
+
+        // Date range filter
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $query->whereBetween('created_at', [$request->date_from, $request->date_to]);
+        } elseif ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        } elseif ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Fetch the filtered cards
+        $groups = $query->get();
+
+        // Return the view with the filtered data
+        return view('cards.allCards', ['groups' => $groups]);
+    }
+
+    public function exportPdf($group_id)
+    {
+        // Get cards with the specified group_id
+        $cards = Card::where('group_id', $group_id)->get();
+
+        // Load the view with the filtered data
+        $pdf = FacadePdf::loadView('cards.pdf', compact('cards'));
+
+        return $pdf->download('filtered_cards_list.pdf'); // Download the generated PDF
+    }
 }
