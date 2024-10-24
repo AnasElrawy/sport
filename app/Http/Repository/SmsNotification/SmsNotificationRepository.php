@@ -23,12 +23,12 @@ class SmsNotificationRepository
             foreach ($tagValue as $tag) {
                 $message = str_replace($tag['key'], $tag['value'], $message);
             }
-            $message=$message." \n". env("APP_NAME");
+            $message = $message . " \n" . env("APP_NAME");
             //twilio sms gateway
             if ($otpConfiguration->sms_gateway == SmsGateway::Twilio) {
                 $twilo = new TwilioSms();
-               $smsRepo = new SmsRepository($twilo);
-               $smsRepo->send($phone, $message);
+                $smsRepo = new SmsRepository($twilo);
+                $smsRepo->send($phone, $message);
             }
         }
     }

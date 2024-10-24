@@ -13,8 +13,6 @@ use App\Http\Repository\UtilityRepository;
 use App\Models\Booking\SchServiceBooking;
 use App\Models\Booking\SchServiceBookingInfo;
 use App\Models\Customer\CmnCustomer;
-use App\Models\Employee\SchEmployee;
-use App\Models\Payment\CmnStripeApiConfig;
 use App\Models\User;
 use App\Notifications\ServiceBookingNotification;
 use App\Notifications\ServiceOrderNotification;
@@ -23,7 +21,6 @@ use ErrorException;
 use Exception;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
-use PayPalHttp\HttpException;
 
 class UserBalanceRepository implements PaymentInterface
 {
@@ -31,13 +28,13 @@ class UserBalanceRepository implements PaymentInterface
     {
         try {
             if (!auth()->check())
-                throw new ErrorException(translate("You can't make payment by user balance without login try another one"));
-                
-            $userBalance = auth()->user()->balance();
+                throw new ErrorException(translate("You can't make payment by user balance without login try another one"));            
+            $user = User::where('id', auth()->id())->first();
+            $userBalance = $user->balance();
             if ($userBalance == null)
                 throw new ErrorException(translate('You do not have enough balance in your account'));
 
-            $user = User::where('id', auth()->id())->first();
+            // $user = User::where('id', auth()->id())->first();
             $rtr = $user->userBalance()->create([
                 'balanceable_type' => PaymentType::UserBalance,
                 'amount' => -$amount,
@@ -158,7 +155,7 @@ class UserBalanceRepository implements PaymentInterface
                 $user->phone_no = $customer->phone_no;
                 $user->full_name = $customer->full_name;
             }
-           
+
             $serviceMessage = [
                 'user_name' => $user->name,
                 'message_subject' => 'Booking confirm notification',

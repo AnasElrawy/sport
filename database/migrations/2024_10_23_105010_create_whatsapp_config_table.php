@@ -13,24 +13,25 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('cards', function (Blueprint $table) {
+        Schema::create('whatsapp_config', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
-            $table->foreignId('group_id');
-            $table->boolean('is_charged')->default(false);
+            $table->string('sid',300);
+            $table->string('token',500);
+            $table->string('phoneNo',50)->nullable();
+            $table->tinyInteger('status')->default(0);
+            $table->integer('created_by')->nullable();
+            $table->integer('updated_by')->nullable();
             $table->timestamps();
-            $table->foreign('group_id')->references('id')->on('card_groups');
         });
     }
 
     /**
      * Reverse the migrations.
-     * 
      *
      * @return void
      */
     public function down()
     {
-        Schema::dropIfExists('cards');
+        Schema::dropIfExists('whatsapp_config');
     }
 };

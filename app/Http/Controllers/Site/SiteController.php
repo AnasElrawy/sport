@@ -298,7 +298,7 @@ class SiteController extends Controller
     public function saveBooking(Request $request)
     {
         DB::beginTransaction();
-         try {
+        try {
             $request = (object)$request->bookingData;
             $bookingRepo = new BookingRepository();
             $customerId = 0;
@@ -317,7 +317,6 @@ class SiteController extends Controller
                 if ($request->payment_type == PaymentType::UserBalance)
                     throw new ErrorException(translate("You can't make payment by user balance without login try another one"));
                 $customer = CmnCustomer::where('phone_no', $request->phone_no)->orWhere('email', $request->email)->select('id', 'phone_no')->first();
-
             }
             if ($customer != null) {
                 $customerId = $customer->id;
@@ -334,7 +333,6 @@ class SiteController extends Controller
                 ];
                 $cstRtrn = CmnCustomer::create($saveCustomer);
                 $customerId = $cstRtrn->id;
-
             }
 
             //customer creation/get failed
@@ -361,7 +359,7 @@ class SiteController extends Controller
                     throw new ErrorException(translate("The selected service is bocked try another one") . ' "' . $item->service_name . '"');
 
                 //check servicce limitation
-                $serviceLimitation = $bookingRepo->IsServiceLimitation($item->service_date, $serviceStartTime,$customerId, $item->sch_service_id, 1, 1);
+                $serviceLimitation = $bookingRepo->IsServiceLimitation($item->service_date, $serviceStartTime, $customerId, $item->sch_service_id, 1, 1);
                 if ($serviceLimitation['allow'] < 1)
                     throw new ErrorException(translate($serviceLimitation['message']));
 
@@ -445,6 +443,7 @@ class SiteController extends Controller
                     ['key' => '{order_number}', 'value' =>   $serviceBookingInfo->id]
                 ]
             );
+
 
             if ($request->payment_type == PaymentType::LocalPayment) {
                 return $this->apiResponse(['status' => 1, 'paymentType' => 'localPayment', 'data' => "successfully save"], 200);

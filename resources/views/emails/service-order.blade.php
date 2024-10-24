@@ -1,38 +1,42 @@
 <?php
-$shipping_details = "<br>";
+$shipping_details = "";
 $totalAmt = 0;
 $paidAmt = 0;
 $dueAmt = 0;
-if ($order != null) {
-	$shipping_details .= ($order->full_name ?? '') . '<br>';
-	$shipping_details .= ($order->email ?? '') . '<br>';
-	$shipping_details .= ($order->phone_no ?? '') . '<br>';
-	$shipping_details .= ($order->street_address ?? '') . ', ' . ($order->street_number ?? '') . ', ' . ($order->city ?? '') . ',' . '<br>';
-}
+// if ($order != null) {
+// 	$shipping_details .= ($order->full_name ?? '') . '<br>';
+// 	$shipping_details .= ($order->email ?? '') . '<br>';
+// 	$shipping_details .= ($order->phone_no ?? '') . '<br>';
+// 	$shipping_details .= ($order->street_address ?? '') . ', ' . ($order->street_number ?? '') . ', ' . ($order->city ?? '') . ',' . '<br>';
+// }
 ?>
 @component('mail::message')
-<table cellspacing="0" cellpadding="5">
+
+	<h3>Order No: {{$order->id}} </a>
+	<h3>Order Date: {{$order->booking_date}}</h3>
+		
+<!-- <table cellspacing="0" cellpadding="5">
 	<tbody>
 		<tr valign="top">
-			<td>{{translate('Order No')}}: {{$order->id}}</td>
-			<td>{{translate('Order Date')}}:<br> {{$order->booking_date}}</td>
+			<td>Order No: {{$order->id}}</td>
+			<td>Order Date:<br> {{$order->booking_date}}</td>
 		</tr>
 		<tr valign="top">
-			<td><b>{{translate('Shipping address')}}</b>: {!!$shipping_details!!}</td>
+			<td><b>Shipping address</b>: {!!$shipping_details!!}</td>
 		</tr>
 	</tbody>
-</table>
+</table> -->
 <table border="1" cellspacing="0" cellpadding="5">
 	<thead>
 		<tr>
-			<th>{{translate('SL')}}</th>
-			<th>{{translate('Booking No')}}</th>
-			<th>{{translate('Item')}}</th>
-			<th>{{translate('Date & Time')}}</th>
-			<th>{{translate('Price')}}</th>
-			<th>{{translate('Paid')}}</th>
-			<th>{{translate('Due')}}</th>
-			< </tr>
+			<th>SL</th>
+			<th>Booking No</th>
+			<th>Item</th>
+			<th>Date & Time</th>
+			<th>Price</th>
+			<th>Paid</th>
+			<th>Due</th>
+			</tr>
 	</thead>
 	<tbody>
 		@foreach ($order->order_details as $key => $details)
@@ -54,10 +58,10 @@ if ($order != null) {
 	</tbody>
 </table>
 <div style="width: 100;float: right;">
-	<b style="float:right;">{{translate('Total Amount')}}: {{round($totalAmt,2)}}</b><br>
-	<b style="float:right;">{{translate('Discount')}}: {{round($order->coupon_discount,2)}}</b><br>
-	<b style="float:right;">{{translate('Payable Amount')}}: {{round($totalAmt-$order->coupon_discount,2)}}</b><br>
-	<b style="float:right;">{{translate('Paid Amount')}}: {{round($paidAmt,2)}}</b><br>
-	<b style="float:right;">{{translate('Due Amount')}}: {{round((($totalAmt-$order->coupon_discount)-$paidAmt),2)}}</b>
+	<b style="float:right;">Total Amount: {{round($totalAmt,2)}}</b><br>
+	<b style="float:right;">Discount: {{round($order->coupon_discount,2)}}</b><br>
+	<b style="float:right;">Payable Amount: {{round($totalAmt-$order->coupon_discount,2)}}</b><br>
+	<b style="float:right;">Paid Amount: {{round($paidAmt,2)}}</b><br>
+	<b style="float:right;">Due Amount: {{ round($totalAmt - $order->coupon_discount - (-$paidAmt), 2) }}</b>
 </div>
 @endcomponent

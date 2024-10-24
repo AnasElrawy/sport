@@ -12,12 +12,9 @@ use App\Models\CardSystem\Card;
 class cardController extends Controller
 {
     //
-
     public function card()
     {
-
         return view('cards.generate_cards');
-
         return response()->json([
             'message' => 'it is in card.'
         ], 200);

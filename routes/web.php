@@ -14,13 +14,10 @@ use Illuminate\Support\Facades\Auth;
 */
 
 // Route::post('create-cards', [App\Http\Controllers\cardController::class, 'createCrard'])->name('create-cards');
-Route::post('charge-card', [App\Http\Controllers\cardController::class, 'chargeCrard'])->name('charge-card');
+Route::post('charge-card', [App\Http\Controllers\cardController::class, 'chargeCard'])->name('charge-card');
 Route::get('/cards/pdf/{group_id}', [App\Http\Controllers\cardController::class, 'exportPdf'])->name('cards.pdf');
 
-
-
 Route::group(['middleware' => 'xssProtection'], function () {
-
 
     Route::get('/login', function () {
         return view('auth.login');
